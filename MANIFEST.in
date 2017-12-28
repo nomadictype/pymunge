@@ -1,3 +1,5 @@
 include README.rst
-include LICENSE.txt licenses/GPL-3 licenses/LGPL-3
+include LICENSE.txt docs/licenses/GPL-3 docs/licenses/LGPL-3
+recursive-include docs *.txt
 include pymunge_example.py
+recursive-include util *
