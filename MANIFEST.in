@@ -1,0 +1,3 @@
+include README.rst
+include LICENSE.txt licenses/GPL-3 licenses/LGPL-3
+include pymunge_example.py

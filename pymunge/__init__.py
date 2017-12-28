@@ -49,6 +49,8 @@ MUNGE links:
   Official repository:  <https://github.com/dun/munge>
 """
 
+from pymunge._version import __version__
+
 import pymunge.context
 from pymunge.context import MungeContext, encode, decode
 
