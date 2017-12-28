@@ -1,6 +1,30 @@
+#########################################################################
+# Module pymunge.native - declarations of native libmunge C functions
+# Copyright (C) 2017 nomadictype <nomadictype AT tutanota.com>
+#
+# pymunge is free software: you can redistribute it and/or modify it
+# under the terms of the GNU General Public License as published by the
+# Free Software Foundation, either version 3 of the License, or (at your
+# option) any later version.  Additionally, you can redistribute it
+# and/or modify it under the terms of the GNU Lesser General Public
+# License as published by the Free Software Foundation, either version 3
+# of the License, or (at your option) any later version.
+#
+# pymunge is distributed in the hope that it will be useful, but WITHOUT
+# ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+# FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+# and GNU Lesser General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# and GNU Lesser General Public License along with pymunge.  If not, see
+# <http://www.gnu.org/licenses/>.
+#########################################################################
+
+"""Declarations of native libmunge C functions and constants"""
+
 import ctypes
 import ctypes.util
-import munge.error
+import pymunge.error
 import sys
 
 libmunge_filename = ctypes.util.find_library('munge')
@@ -15,12 +39,14 @@ gid_t = ctypes.c_uint
 time_t = ctypes.c_long
 
 def check_and_raise(error_code, ctx, result):
-    if error_code != munge.error.MungeErrorCode.EMUNGE_SUCCESS.value:
+    """pymunge internal - helper for error check functions;
+    raises a MungeError if error_code is not EMUNGE_SUCCESS"""
+    if error_code != pymunge.error.MungeErrorCode.EMUNGE_SUCCESS.value:
         if ctx is not None:
             message = munge_ctx_strerror(ctx).decode("utf-8")
         else:
             message = munge_strerror(error_code).decode("utf-8")
-        raise munge.error.MungeError(error_code, message, result)
+        raise pymunge.error.MungeError(error_code, message, result)
 
 # MUNGE context options
 MUNGE_OPT_CIPHER_TYPE       =  0    # symmetric cipher type (int)
@@ -41,7 +67,7 @@ MUNGE_ENUM_MAC              =  1    # mac enum type
 MUNGE_ENUM_ZIP              =  2    # zip enum type
 
 #
-#    cred = munge.native.munge_encode(ctx, buf, len)
+#    cred = pymunge.native.munge_encode(ctx, buf, len)
 #
 # Creates a credential contained in a base64 string.
 # A payload specified by a buffer [buf] (a byte string) of length [len]
@@ -57,6 +83,7 @@ _prototype = ctypes.CFUNCTYPE(munge_err_t,
 munge_encode = _prototype(("munge_encode", libmunge),
         ((2, "cred"), (1, "ctx", None), (1, "buf", None), (1, "len", 0)))
 def errcheck_munge_encode(error_code, func, arguments):
+    """pymunge internal - error check function for munge_encode"""
     ctx = arguments[1]
     result = arguments[0].value
     check_and_raise(error_code, ctx, result)
@@ -64,7 +91,7 @@ def errcheck_munge_encode(error_code, func, arguments):
 munge_encode.errcheck = errcheck_munge_encode
 
 #
-#    payload, uid, gid = munge.native.munge_decode(cred, ctx)
+#    payload, uid, gid = pymunge.native.munge_decode(cred, ctx)
 #
 # Validates the credential [cred].
 # If the munge context [ctx] is not None, it will be set to that used
@@ -87,6 +114,7 @@ munge_decode = _prototype(("munge_decode", libmunge),
         ((1, "cred"), (1, "ctx", None), (2, "buf"), (2, "len"),
          (2, "uid"), (2, "gid")))
 def errcheck_munge_decode(error_code, func, arguments):
+    """pymunge internal - error check function for munge_decode"""
     ctx = arguments[1]
     buf = ctypes.string_at(arguments[2].value, arguments[3].value)
     result = (buf, arguments[4].value, arguments[5].value)
@@ -95,7 +123,7 @@ def errcheck_munge_decode(error_code, func, arguments):
 munge_decode.errcheck = errcheck_munge_decode
 
 #
-#    message = munge.native.munge_strerror(e)
+#    message = pymunge.native.munge_strerror(e)
 #
 # Returns a descriptive string describing the munge errno [e].
 #
@@ -104,7 +132,7 @@ munge_strerror = _prototype(("munge_strerror", libmunge),
         ((1, "e"),))
 
 #
-#    ctx = munge.native.munge_ctx_create()
+#    ctx = pymunge.native.munge_ctx_create()
 #
 # Creates and returns a new munge context or None on error.
 # Abandoning a context without calling munge_ctx_destroy() will result
@@ -114,7 +142,7 @@ _prototype = ctypes.CFUNCTYPE(munge_ctx_t)
 munge_ctx_create = _prototype(("munge_ctx_create", libmunge))
 
 #
-#    ctx = munge.native.munge_ctx_copy(ctx)
+#    ctx = pymunge.native.munge_ctx_copy(ctx)
 #
 # Copies the context [ctx], returning a new munge context or None on error.
 # Abandoning a context without calling munge_ctx_destroy() will result
@@ -125,7 +153,7 @@ munge_ctx_copy = _prototype(("munge_ctx_copy", libmunge),
         ((1, "ctx"),))
 
 #
-#    munge.native.munge_ctx_destroy(ctx)
+#    pymunge.native.munge_ctx_destroy(ctx)
 #
 # Destroys the context [ctx].
 #
@@ -134,7 +162,7 @@ munge_ctx_destroy = _prototype(("munge_ctx_destroy", libmunge),
         ((1, "ctx"),))
 
 #
-#    message = munge.native.munge_ctx_strerror(ctx)
+#    message = pymunge.native.munge_ctx_strerror(ctx)
 #
 # Returns a descriptive text string describing the munge error number
 # according to the context [ctx], or None if no error condition exists.
@@ -145,7 +173,7 @@ munge_ctx_strerror = _prototype(("munge_ctx_strerror", libmunge),
         ((1, "ctx"),))
 
 #
-#    munge.native.munge_ctx_get(ctx, opt, ...)
+#    pymunge.native.munge_ctx_get(ctx, opt, ...)
 #
 # Gets the value for the option [opt] (of munge_opt_t) associated with the
 # munge context [ctx], storing the result in the subsequent pointer
@@ -157,13 +185,15 @@ munge_ctx_strerror = _prototype(("munge_ctx_strerror", libmunge),
 munge_ctx_get = libmunge.munge_ctx_get
 munge_ctx_get.restype = munge_err_t
 def errcheck_munge_ctx_getset(error_code, func, arguments):
+    """pymunge internal - error check function for munge_ctx_get
+    and munge_ctx_set"""
     ctx = arguments[0]
     check_and_raise(error_code, ctx, None)
     return arguments
 munge_ctx_get.errcheck = errcheck_munge_ctx_getset
 
 #
-#    munge.native.munge_ctx_set(ctx, opt, ...)
+#    pymunge.native.munge_ctx_set(ctx, opt, ...)
 #
 # Sets the value for the option [opt] (of munge_opt_t) associated with the
 # munge context [ctx], using the value of the subsequent argument.
@@ -175,7 +205,7 @@ munge_ctx_set.restype = munge_err_t
 munge_ctx_set.errcheck = errcheck_munge_ctx_getset
 
 #
-#    is_valid = munge.native.munge_enum_is_valid(type, val)
+#    is_valid = pymunge.native.munge_enum_is_valid(type, val)
 #
 # Returns True if the given value [val] is a valid enumeration of
 # the specified type [type] in the software configuration as currently
@@ -188,7 +218,7 @@ munge_enum_is_valid = _prototype(("munge_enum_is_valid", libmunge),
         ((1, "type"), (1, "val")))
 
 #
-#    s = munge.native.munge_enum_int_to_str(type, val)
+#    s = pymunge.native.munge_enum_int_to_str(type, val)
 #
 # Converts the munge enumeration [val] of the specified type [type]
 # into a text string. Returns the text string, or None on error.
@@ -198,7 +228,7 @@ munge_enum_int_to_str = _prototype(("munge_enum_int_to_str", libmunge),
         ((1, "type"), (1, "val")))
 
 #
-#    num = munge.native.munge_enum_str_to_int(type, str)
+#    num = pymunge.native.munge_enum_str_to_int(type, str)
 #
 # Converts the case-insensitive byte string [str] into the corresponding
 # munge enumeration of the specified type [type].
