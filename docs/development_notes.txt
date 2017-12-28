@@ -24,9 +24,10 @@ Release checklist
 - Check if any other release files (e.g. setup.py, README) need updates.
   In particular check if any requirements/depends need to be updated.
 - Make a commit for the above changes (if any)
-- Update version number in pymunge/_version.py
-- Add an entry to NEWS file
+- Update version number in pymunge/_version.py and README.rst
+- Update changelog.txt
 - Make a version bump commit. (Do not push this commit yet.)
+- Tag this commit with the version number. (Do not push this tag either.)
 - Make source and binary distributions::
 
     python3 setup.py sdist
@@ -35,7 +36,7 @@ Release checklist
   Inspect them to check if they seem correct.
   Test installing at least the source distribution.
 
-- Push the version bump commit.
+- Push the version bump commit and tag.
 - Upload the release to pypi::
 
     twine upload dist/*

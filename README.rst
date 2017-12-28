@@ -1,6 +1,6 @@
-===========
-pymunge 0.1
-===========
+=============
+pymunge 0.1.1
+=============
 
 A Python interface to MUNGE.
 
