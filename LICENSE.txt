@@ -1,6 +1,6 @@
 In short:
 pymunge is dual-licensed under GPL-3 and LGPL-3.
-See licenses/GPL-3 and licenses/LGPL-3 for the full license texts.
+See docs/licenses/GPL-3 and docs/licenses/LGPL-3 for the full license texts.
 
 
 pymunge is free software: you can redistribute it and/or modify it
