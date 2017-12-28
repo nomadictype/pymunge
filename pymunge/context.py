@@ -23,7 +23,7 @@
 """This module provides the MungeContext class and functions to encode
 and decode credentials. The core of pymunge."""
 
-from pymunge.error import MungeError
+from pymunge.error import MungeError, MungeErrorCode
 from pymunge.enums import CipherType, MACType, ZipType
 import pymunge.native
 import ctypes
@@ -156,9 +156,13 @@ class MungeContext(object):
             return None
     @realm.setter
     def realm(self, realm):
-        self._check_arg_type(realm, "realm", str)
-        self._set_option(pymunge.native.MUNGE_OPT_REALM,
-                ctypes.c_char_p, realm.encode('utf-8'))
+        if realm is not None:
+            self._check_arg_type(realm, "realm", str)
+            self._set_option(pymunge.native.MUNGE_OPT_REALM,
+                    ctypes.c_char_p, realm.encode('utf-8'))
+        else:
+            self._set_option(pymunge.native.MUNGE_OPT_REALM,
+                    ctypes.c_char_p, None)
 
     @property
     def ttl(self):
@@ -249,7 +253,7 @@ class MungeContext(object):
 
     def _ensure_is_open(self):
         if self.closed:
-            raise MungeError(MungeError.EMUNGE_BAD_ARG, "Context is closed")
+            raise MungeError(MungeErrorCode.EMUNGE_BAD_ARG, "Context is closed")
 
     def _check_arg_type(self, arg, argname, argtype):
         if not isinstance(arg, argtype):
