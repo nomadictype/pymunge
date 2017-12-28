@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 """setup.py for pymunge.
 
 Based on:
@@ -5,9 +7,12 @@ Based on:
   https://github.com/kennethreitz/setup.py
 """
 
-from setuptools import setup, find_packages
+from setuptools import setup, find_packages, Command
+from setuptools.command.sdist import sdist
 from codecs import open
+import os
 from os import path
+import subprocess
 
 here = path.abspath(path.dirname(__file__))
 
@@ -19,6 +24,26 @@ with open(path.join(here, 'pymunge', '_version.py')) as f:
 # Read long description from readme
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
+
+class CleanCommand(Command):
+    """Custom clean command to tidy up the project root."""
+    user_options = []
+    def initialize_options(self):
+        pass
+    def finalize_options(self):
+        pass
+    def run(self):
+        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
+
+class SdistCommand(sdist):
+    """Custom sdist command to set owner/group to root for a files
+    in the created tarball"""
+    def run(self):
+        super().run()
+        tar_chown_script = path.join(here, 'util', 'tar_chown.pl')
+        for archive in self.get_archive_files():
+            print('changing file ownerships in archive ' + archive)
+            subprocess.call([tar_chown_script, archive])
 
 setup(
     name='pymunge',
@@ -46,4 +71,8 @@ setup(
     keywords='munge libmunge hpc cluster authentication credentials',
     packages=['pymunge'],
     install_requires=[],
+    cmdclass={
+        'clean': CleanCommand,
+        'sdist': SdistCommand,
+    },
 )
