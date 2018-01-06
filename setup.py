@@ -9,6 +9,7 @@ Based on:
 
 from setuptools import setup, find_packages, Command
 from setuptools.command.sdist import sdist
+from distutils.command.clean import clean
 from codecs import open
 import os
 from os import path
@@ -25,13 +26,8 @@ with open(path.join(here, 'pymunge', '_version.py')) as f:
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
     long_description = f.read()
 
-class CleanCommand(Command):
+class CleanCommand(clean):
     """Custom clean command to tidy up the project root."""
-    user_options = []
-    def initialize_options(self):
-        pass
-    def finalize_options(self):
-        pass
     def run(self):
         os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
 
