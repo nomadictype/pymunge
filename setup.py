@@ -29,7 +29,7 @@ with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
 class CleanCommand(clean):
     """Custom clean command to tidy up the project root."""
     def run(self):
-        os.system('rm -vrf ./build ./dist ./*.pyc ./*.tgz ./*.egg-info')
+        os.system('rm -vrf ./build ./dist ./deb_dist ./*.pyc ./pymunge-*.tar.gz ./pymunge-*.tgz ./*.egg-info')
 
 class SdistCommand(sdist):
     """Custom sdist command to set owner/group to root for a files
