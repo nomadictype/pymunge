@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 #########################################################################
 # pymunge_example.py - a set of simple usage examples for pymunge
 # Copyright (C) 2017 nomadictype <nomadictype AT tutanota.com>
@@ -31,10 +31,10 @@ print(">>> Basic usage: Encoding and decoding credentials")
 cred = pymunge.encode(b"Meet at the bridge")
 print("Created credential: %r" % cred)
 payload, uid, gid, ctx = pymunge.decode(cred)
-print("Successfully decoded credential" % payload)
+print("Successfully decoded credential")
 print("Payload: %r" % payload)
 
-print()
+print("")
 
 ######
 
@@ -46,7 +46,7 @@ with pymunge.MungeContext() as ctx:
     cred2 = ctx.encode(b"Meet tomorrow 8:45")
 
 print("Created credential 2: %r" % cred2)
-print()
+print("")
 
 ######
 
@@ -70,7 +70,7 @@ with pymunge.MungeContext() as ctx:
     print("UID restriction:  %d" % ctx.uid_restriction)
     print("GID restriction:  %d" % ctx.gid_restriction)
 
-print()
+print("")
 
 ######
 

@@ -65,7 +65,7 @@ class MungeError(Exception):
         """
         if not isinstance(code, MungeErrorCode):
             code = MungeErrorCode(code)
-        super().__init__("%s (error code %d: %s)" %
+        super(MungeError, self).__init__("%s (error code %d: %s)" %
                 (message, code.value, code.name))
         self.code = code
         self.message = message

@@ -23,8 +23,8 @@ Install instructions
 
 Requirements:
 
-* Python 3.4 or later (Python 2 is not supported.)
-* MUNGE 0.5.x
+* Python 3.4 or later (or Python 2.7 with the 'enum34' package).
+* MUNGE 0.5.x or later.
 * A munged daemon must be running on the same machine in order
   for pymunge to be able to create and validate credentials.
 

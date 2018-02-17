@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+#!/usr/bin/env python
 
 """setup.py for pymunge.
 
@@ -14,6 +14,7 @@ from codecs import open
 import os
 from os import path
 import subprocess
+import sys
 
 here = path.abspath(path.dirname(__file__))
 
@@ -35,11 +36,16 @@ class SdistCommand(sdist):
     """Custom sdist command to set owner/group to root for a files
     in the created tarball"""
     def run(self):
-        super().run()
+        super(SdistCommand, self).run()
         tar_chown_script = path.join(here, 'util', 'tar_chown.pl')
         for archive in self.get_archive_files():
             print('changing file ownerships in archive ' + archive)
             subprocess.call([tar_chown_script, archive])
+
+if sys.version_info >= (3,4):
+    install_requires = []
+else:
+    install_requires = ['enum34']
 
 setup(
     name='pymunge',
@@ -66,7 +72,7 @@ setup(
     ],
     keywords='munge libmunge hpc cluster authentication credentials',
     packages=['pymunge'],
-    install_requires=[],
+    install_requires=install_requires,
     cmdclass={
         'clean': CleanCommand,
         'sdist': SdistCommand,
