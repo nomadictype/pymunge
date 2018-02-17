@@ -34,10 +34,37 @@ class MungeContext(object):
     """A MUNGE context. Encapsulates a collection of options used when
     creating a credential, or obtained from decoding a credential.
 
-    A MungeContext can be used a context manager for a 'with' statement,
-    closing the context when exiting the 'with' scope, e.g.:
+    `MungeContext()` creates a new context with default attributes.
+    As contexts are mutable, the context's attributes can subsequently
+    be modified by assigning values to them.
+
+    If `ctx != None`, `MungeContext(ctx)` creates a copy of the context
+    `ctx`. (For `ctx == None`, `MungeContext(ctx)` is equivalent to
+    `MungeContext()`.) Modifying attributes in the copy does not affect
+    the attributes of the original context.
+
+    A `MungeContext` should be closed when it is no longer used.
+    The easiest way to do this is to use the `MungeContext` as a
+    context manager for a 'with' statement, which automatically closes
+    the context when the 'with' scope ends, e.g.:
+
     >>> with MungeContext() as ctx:
     >>>     do stuff with ctx
+    >>> # ctx is now closed
+
+    Typical `MungeContext` usage patterns:
+
+    * For encoding:
+
+    >>> with MungeContext() as ctx:
+    >>>     (set attributes of ctx, if needed)
+    >>>     cred = ctx.encode(payload)
+
+    * For decoding:
+
+    >>> with MungeContext() as ctx:
+    >>>     payload, uid, gid = ctx.decode(cred)
+    >>>     (check attributes of ctx, if needed)
     """
 
     def __init__(self, ctx=None):
@@ -63,10 +90,10 @@ class MungeContext(object):
 
     def close(self):
         """Close this context, releasing any resources associated with it.
-        Once a context is closed, it cannot be reopened, and it cannot be
-        used to encode, decode, or to read or set options (in each case,
-        a MungeError is raised). Calling close() on an already closed
-        context has no effect."""
+        Once a context is closed, it cannot be reopened. It also cannot be
+        used to encode or decode credentials, nor can its attributes (other
+        than `closed`) be read or set (in each case, a `MungeError` is raised).
+        Calling `close()` on an already closed context has no effect."""
         if self.ctx is not None:
             pymunge.native.munge_ctx_destroy(self.ctx)
             self.ctx = None
@@ -75,7 +102,7 @@ class MungeContext(object):
     def closed(self):
         """True if this context is closed, False otherwise.
         This property cannot be explicitly set, instead use the
-        close() method to close the context."""
+        `close()` method to close the context."""
         return self.ctx is None
 
     def encode(self, payload=None):
@@ -84,7 +111,7 @@ class MungeContext(object):
         as well.
 
         If successful, returns the credential (a byte string), otherwise
-        raises a MungeError."""
+        raises a `MungeError`."""
         self._ensure_is_open()
         if isinstance(payload, bytes):
             return pymunge.native.munge_encode(self.ctx, payload, len(payload))
@@ -95,16 +122,16 @@ class MungeContext(object):
                     type(payload).__name__)
 
     def decode(self, cred):
-        """Validate a MUNGE credential. This context will be set to that
-        used to encode the credential.
+        """Validate a MUNGE credential. The attributes of this context will be
+        set to those used to encode the credential.
 
-        If successful, returns (payload, uid, gid), where payload is the
-        payload encapsulated in the credential, and uid, gid are the
+        If successful, returns `(payload, uid, gid)`, where `payload` is the
+        payload encapsulated in the credential, and `uid`, `gid` are the
         UID/GID of the process that created the credential.
-        Otherwise a MungeError is raised. For certain errors
-        (i.e. EMUNGE_CRED_EXPIRED, EMUNGE_CRED_REWOUND, EMUNGE_CRED_REPLAYED),
-        the payload, uid and gid can still be obtained via the `result`
-        property of the raised MungeError."""
+        Otherwise a `MungeError` is raised. For certain errors
+        (i.e. `EMUNGE_CRED_EXPIRED`, `EMUNGE_CRED_REWOUND`,
+        `EMUNGE_CRED_REPLAYED`), the `payload`, `uid` and `gid` can still
+        be obtained via the `result` property of the raised `MungeError`."""
         self._ensure_is_open()
         if isinstance(cred, bytes):
             return pymunge.native.munge_decode(cred, self.ctx)
@@ -114,7 +141,7 @@ class MungeContext(object):
 
     @property
     def cipher_type(self):
-        """Symmetric cipher type (a CipherType)."""
+        """Symmetric cipher type (a `CipherType`)."""
         return CipherType(self._get_option(pymunge.native.MUNGE_OPT_CIPHER_TYPE,
                 ctypes.c_int))
     @cipher_type.setter
@@ -125,7 +152,7 @@ class MungeContext(object):
 
     @property
     def mac_type(self):
-        """Message authentication code type (a MACType)."""
+        """Message authentication code type (a `MACType`)."""
         return MACType(self._get_option(pymunge.native.MUNGE_OPT_MAC_TYPE,
                 ctypes.c_int))
     @mac_type.setter
@@ -136,7 +163,7 @@ class MungeContext(object):
 
     @property
     def zip_type(self):
-        """Compression type (a ZipType)."""
+        """Compression type (a `ZipType`)."""
         return ZipType(self._get_option(pymunge.native.MUNGE_OPT_ZIP_TYPE,
                 ctypes.c_int))
     @zip_type.setter
@@ -170,10 +197,11 @@ class MungeContext(object):
         credential is valid once it has been encoded.
 
         When encoding a credential, two special values can be used:
-        * MUNGE_TTL_DEFAULT, which specifies the default according to the
-        munged configuration. This is the default value of this property.
-        * MUNGE_TTL_MAXIMUM, which specifies the maximum allowed by the
-        munged configuration."""
+
+        * `TTL_DEFAULT`, which specifies the default according to the
+          munged configuration. This is the default value of this property.
+        * `TTL_MAXIMUM`, which specifies the maximum allowed by the
+          munged configuration."""
         return self._get_option(pymunge.native.MUNGE_OPT_TTL, ctypes.c_int)
     @ttl.setter
     def ttl(self, ttl):
@@ -219,7 +247,7 @@ class MungeContext(object):
     def uid_restriction(self):
         """Numeric UID allowed to decode the credential. This value will be
         matched against the effective user ID of the process requesting the
-        credential decode. Default is the special value UID_ANY, which
+        credential decode. Default is the special value `UID_ANY`, which
         means no UID restriction is set."""
         uid = self._get_option(pymunge.native.MUNGE_OPT_UID_RESTRICTION,
                 pymunge.native.uid_t)
@@ -237,7 +265,7 @@ class MungeContext(object):
     def gid_restriction(self):
         """Numeric GID allowed to decode the credential. This value will be
         matched against the effective group ID of the process requesting the
-        credential decode. Default is the special value GID_ANY, which
+        credential decode. Default is the special value `GID_ANY`, which
         means no GID restriction is set."""
         gid = self._get_option(pymunge.native.MUNGE_OPT_GID_RESTRICTION,
                 pymunge.native.gid_t)
@@ -276,24 +304,24 @@ def encode(payload=None):
     Optionally, a payload (byte string) can be encapsulated as well.
 
     If successful, returns the credential (a byte string), otherwise
-    raises a MungeError."""
+    raises a `MungeError`."""
     with MungeContext() as ctx:
         return ctx.encode(payload)
 
 def decode(cred):
     """Validate a MUNGE credential using the default context.
 
-    If successful, returns (payload, uid, gid, ctx), where payload is the
-    payload encapsulated in the credential, uid, gid are the
-    UID/GID of the process that created the credential, and ctx is a
-    MungeContext set to the one used to create the credential.
+    If successful, returns `(payload, uid, gid, ctx)`, where `payload` is the
+    payload encapsulated in the credential, `uid`, `gid` are the
+    UID/GID of the process that created the credential, and `ctx` is a
+    `MungeContext` set to the one used to create the credential.
 
-    If unsuccessful, a MungeError is raised. For certain errors
-    (i.e. EMUNGE_CRED_EXPIRED, EMUNGE_CRED_REWOUND, EMUNGE_CRED_REPLAYED),
-    the payload, uid and gid can still be obtained via the `result`
-    property of the raised MungeError. Note that the context cannot
-    be obtained from the MungeError; if you need it, manually create
-    a MungeContext and use its decode() method."""
+    If unsuccessful, a `MungeError` is raised. For certain errors
+    (i.e. `EMUNGE_CRED_EXPIRED`, `EMUNGE_CRED_REWOUND`, `EMUNGE_CRED_REPLAYED`),
+    the `payload`, `uid` and `gid` can still be obtained via the `result`
+    property of the raised `MungeError`. Note that the context cannot
+    be obtained from the `MungeError`; if you need it, manually create
+    a `MungeContext` and use its decode() method."""
     ctx = MungeContext()
     payload, uid, gid = ctx.decode(cred)
     return payload, uid, gid, ctx

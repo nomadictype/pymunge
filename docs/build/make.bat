@@ -33,6 +33,7 @@ goto end
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
+goto end
 
 :clean
 del /S %BUILDDIR%\html %BUILDDIR%\doctrees

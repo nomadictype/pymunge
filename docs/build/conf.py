@@ -43,6 +43,7 @@ extensions = [
     'sphinx.ext.intersphinx',
     'sphinx.ext.viewcode',
     'sphinx.ext.githubpages',
+    'sphinxcontrib.fulltoc',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -67,10 +68,13 @@ language = None
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
 # This pattern also affects html_static_path and html_extra_path .
-exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
+exclude_patterns = ['_build', 'build', 'Thumbs.db', '.DS_Store']
 
 # The name of the Pygments (syntax highlighting) style to use.
 pygments_style = 'sphinx'
+
+# Default role for all cross references
+default_role = 'any'
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -160,6 +164,12 @@ texinfo_documents = [
 
 
 # -- Extension configuration -------------------------------------------------
+
+# -- Options for autodoc extension -------------------------------------------
+
+autodoc_default_flags = ['members', 'undoc-members', 'show-inheritance']
+autodoc_member_order = "groupwise"
+autodoc_docstring_signature = True
 
 # -- Options for intersphinx extension ---------------------------------------
 
