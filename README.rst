@@ -4,14 +4,14 @@ pymunge 0.1.1
 
 A Python interface to MUNGE.
 
-MUNGE (MUNGE Uid 'N' Gid Emporium, https://dun.github.io/munge/)
-is an authentication service for creating and validating credentials
-designed to be highly scalable for use in an HPC cluster environment.
-
 pymunge is a Python wrapper for the C API of MUNGE, called
 libmunge.  pymunge provides functions and classes to create
 and validate credentials with MUNGE, and to use and interact with
 MUNGE contexts.
+
+MUNGE (MUNGE Uid 'N' Gid Emporium, https://dun.github.io/munge/)
+is an authentication service for creating and validating credentials
+designed to be highly scalable for use in an HPC cluster environment.
 
 Official pymunge repository: https://github.com/nomadictype/pymunge
 
@@ -31,15 +31,18 @@ Requirements:
 Make sure that all the above requirements are satisfied. Afterwards,
 there are several possible ways to proceed:
 
-* To install pymunge from PyPI, simply run::
+* To install pymunge from PyPI, run the following command (preferably
+  in a virtualenv)::
 
     python3 -m pip install pymunge
 
 * Alternatively, your OS distribution may include pymunge as a package,
   with a name such as pymunge, python3-pymunge, or python-pymunge.
-* pymunge can also be used directly without installation - simply
-  append the path containing the pymunge package to your
-  PYTHONPATH environment variable.
+
+* pymunge can also be used directly without installation. Just ensure
+  that Python can find the pymunge package (for example by appending
+  the parent directory of the pymunge package to the PYTHONPATH
+  environment variable).
 
 
 Getting started / Tutorial
@@ -61,9 +64,12 @@ For example:
 >>> cred
 b'MUNGE:AwQDAA...'
 
-The credential cred can now be sent to some other process (or passed
-to the unmunge program) to decode it. For the purpose of this
-tutorial, we simply decode it in the same process.
+The credential `cred` can now be sent to some other process to decode it
+(via a socket or some other IPC mechanism) -- this is the responsibility
+of the program which uses pymunge, pymunge does not provide any functions
+to do this! For testing purposes, you can also pipe the credential into
+the `unmunge` program by hand. To keep this tutorial simple, let us
+decode the credential directly in the same process::
 
 >>> payload, uid, gid, ctx = pymunge.decode(cred)
 >>> payload
