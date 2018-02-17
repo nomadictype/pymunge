@@ -24,19 +24,19 @@ from pymunge.context import MungeContext, encode, decode
 from pymunge.enums import CipherType, MACType, ZipType, \
         TTL_DEFAULT, UID_ANY, GID_ANY
 from pymunge.error import MungeError, MungeErrorCode
-import pymunge.native
+import pymunge.raw
 
 import pytest
 import os
 import time
 
 class MockContextDestroy(object):
-    """Mocks/monkeypatches pymunge.native.munge_ctx_destroy and counts
+    """Mocks/monkeypatches pymunge.raw.munge_ctx_destroy and counts
     how often it has been called"""
     def __init__(self, monkeypatch):
         self.history = []
-        self.mocked_function = pymunge.native.munge_ctx_destroy
-        monkeypatch.setattr(pymunge.native, 'munge_ctx_destroy', self)
+        self.mocked_function = pymunge.raw.munge_ctx_destroy
+        monkeypatch.setattr(pymunge.raw, 'munge_ctx_destroy', self)
     def __call__(self, ctx):
         self.history.append(ctx)
         self.mocked_function(ctx)

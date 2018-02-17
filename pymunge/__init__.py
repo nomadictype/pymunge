@@ -61,7 +61,7 @@ import pymunge.enums
 from pymunge.enums import CipherType, MACType, ZipType, \
         TTL_MAXIMUM, TTL_DEFAULT, UID_ANY, GID_ANY
 
-import pymunge.native
+import pymunge.raw
 
 __all__ = ['MungeContext', 'encode', 'decode',
         'MungeError', 'MungeErrorCode',

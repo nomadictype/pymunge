@@ -1,4 +1,4 @@
-pymunge.native - low-level API
-==============================
+pymunge.raw - low-level API
+===========================
 
-.. automodule:: pymunge.native
+.. automodule:: pymunge.raw

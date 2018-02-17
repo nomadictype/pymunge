@@ -1,5 +1,5 @@
 #########################################################################
-# Module pymunge.native - declarations of native libmunge C functions
+# Module pymunge.raw - declarations of raw libmunge C functions
 # Copyright (C) 2017-2018 nomadictype <nomadictype AT tutanota.com>
 #
 # pymunge is free software: you can redistribute it and/or modify it
@@ -20,7 +20,7 @@
 # <http://www.gnu.org/licenses/>.
 #########################################################################
 
-"""This module contains declarations of native libmunge C functions
+"""This module contains declarations of raw libmunge C functions
 and constants.
 
 Importing this module causes the libmunge shared library to be loaded.
