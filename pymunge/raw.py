@@ -43,13 +43,56 @@ import ctypes
 import ctypes.util
 import pymunge.error
 
-
 #: Name of the libmunge shared object.
-libmunge_filename = ctypes.util.find_library('munge')
+libmunge_filename = ctypes.util.find_library('mungey')
 
 #: Handle to the loaded libmunge shared object (a `ctypes.CDLL` object).
-libmunge = ctypes.CDLL(libmunge_filename)
+libmunge = None
+if libmunge_filename is not None:
+    libmunge = ctypes.CDLL(libmunge_filename)
+else:
+    import warnings
+    warnings.warn("libmunge not found. All calls to pymunge.raw will fail.")
 
+
+### Helper functions ###
+
+def load_function(name, restype, argtypes, paramflags, errcheck=None):
+    """pymunge internal - helper to load functions from libmunge
+    raises a `MungeError` if error_code is not `EMUNGE_SUCCESS`"""
+    if libmunge is None:
+        # Mock libmunge functions if the library was not found. This allows
+        # readthedocs to build the sphinx docs for the package without
+        # having libmunge installed.
+        if argtypes == "*":
+            args = "*args"
+        else:
+            argnames = [flag[1] for flag in paramflags if flag[0] & 2 == 0]
+            args = ", ".join(argnames)
+        def _raise(e):
+            raise e
+        return eval("lambda " + args + ": "
+                "_raise(ImportError('libmunge not found'))")
+    else:
+        if argtypes == "*":
+            function = getattr(libmunge, name)
+            function.restype = restype
+        else:
+            prototype = ctypes.CFUNCTYPE(restype, *argtypes)
+            function = prototype((name, libmunge), paramflags)
+        if errcheck is not None:
+            function.errcheck = errcheck
+        return function
+
+def check_and_raise(error_code, ctx, result):
+    """pymunge internal - helper for error check functions;
+    raises a `MungeError` if error_code is not `EMUNGE_SUCCESS`"""
+    if error_code != pymunge.error.MungeErrorCode.EMUNGE_SUCCESS.value:
+        if ctx is not None:
+            message = munge_ctx_strerror(ctx).decode("utf-8")
+        else:
+            message = munge_strerror(error_code).decode("utf-8")
+        raise pymunge.error.MungeError(error_code, message, result)
 
 ### Types ###
 
@@ -76,30 +119,25 @@ gid_t = ctypes.c_uint
 #: The `time_t` C type. Specifies a timestamp.
 time_t = ctypes.c_long
 
-def check_and_raise(error_code, ctx, result):
-    """pymunge internal - helper for error check functions;
-    raises a `MungeError` if error_code is not `EMUNGE_SUCCESS`"""
-    if error_code != pymunge.error.MungeErrorCode.EMUNGE_SUCCESS.value:
-        if ctx is not None:
-            message = munge_ctx_strerror(ctx).decode("utf-8")
-        else:
-            message = munge_strerror(error_code).decode("utf-8")
-        raise pymunge.error.MungeError(error_code, message, result)
-
 
 ### Functions ###
 
-### munge_encode ###
+def errcheck_munge_encode(error_code, func, arguments):
+    """pymunge internal - error check function for munge_encode"""
+    ctx = arguments[1]
+    result = arguments[0].value
+    check_and_raise(error_code, ctx, result)
+    return result
 
-_prototype = ctypes.CFUNCTYPE(munge_err_t,
-        ctypes.POINTER(ctypes.c_char_p),
-        munge_ctx_t, ctypes.c_void_p, ctypes.c_int)
-munge_encode = _prototype(("munge_encode", libmunge),
-        ((2, "cred"), (1, "ctx", None), (1, "buf", None), (1, "len", 0)))
+munge_encode = load_function("munge_encode",
+        munge_err_t, [ctypes.POINTER(ctypes.c_char_p),
+            munge_ctx_t, ctypes.c_void_p, ctypes.c_int],
+        ((2, "cred"), (1, "ctx", None), (1, "buf", None), (1, "len", 0)),
+        errcheck_munge_encode)
 """
-`char * munge_encode(munge_ctx_t ctx, const void *buf, int len);`
+C prototype: `munge_err_t munge_encode(char **cred, munge_ctx_t ctx, const void *buf, int len);`
 
->>> cred = munge_encode(ctx, buf, len)
+Note: when called from Python, returns `cred` instead of the `munge_err_t`.
 
 Creates a credential contained in a base64 string.
 A payload specified by a buffer `buf` (a byte string) of length `len`
@@ -110,25 +148,27 @@ otherwise, raises a `MungeError` containing the error code and message.
 The error message may be more detailed if a `ctx` was specified.
 """
 
-def errcheck_munge_encode(error_code, func, arguments):
-    """pymunge internal - error check function for munge_encode"""
+def errcheck_munge_decode(error_code, func, arguments):
+    """pymunge internal - error check function for munge_decode"""
     ctx = arguments[1]
-    result = arguments[0].value
+    buf = ctypes.string_at(arguments[2].value, arguments[3].value)
+    result = (buf, arguments[4].value, arguments[5].value)
     check_and_raise(error_code, ctx, result)
     return result
-munge_encode.errcheck = errcheck_munge_encode
 
-### munge_decode ###
-
-_prototype = ctypes.CFUNCTYPE(munge_err_t,
-        ctypes.c_char_p, munge_ctx_t,
-        ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int),
-        ctypes.POINTER(uid_t), ctypes.POINTER(gid_t))
-munge_decode = _prototype(("munge_decode", libmunge),
+munge_decode = load_function("munge_decode",
+        munge_err_t, [ctypes.c_char_p, munge_ctx_t,
+            ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int),
+            ctypes.POINTER(uid_t), ctypes.POINTER(gid_t)],
         ((1, "cred"), (1, "ctx", None), (2, "buf"), (2, "len"),
-         (2, "uid"), (2, "gid")))
+         (2, "uid"), (2, "gid")),
+        errcheck_munge_decode)
 """
-`(char *, uid_t, gid_t) munge_decode(const char *cred, munge_ctx_t ctx);`
+C prototype: `munge_err_t munge_decode(const char *cred, munge_ctx_t ctx, void **buf, int *len, uid_t *uid, gid_t *gid);`
+
+Note: when called from Python, returns `(payload, uid, gid)` instead of the
+`munge_err_t`, where `payload` is the contents of `buf` of length `len`.
+Example usage:
 
 >>> payload, uid, gid = munge_decode(cred, ctx)
 
@@ -146,98 +186,54 @@ contain the result `(payload, uid, gid)` which would have been returned
 if the credential were still valid.
 """
 
-def errcheck_munge_decode(error_code, func, arguments):
-    """pymunge internal - error check function for munge_decode"""
-    ctx = arguments[1]
-    buf = ctypes.string_at(arguments[2].value, arguments[3].value)
-    result = (buf, arguments[4].value, arguments[5].value)
-    check_and_raise(error_code, ctx, result)
-    return result
-munge_decode.errcheck = errcheck_munge_decode
-
-### munge_strerror ###
-
-_prototype = ctypes.CFUNCTYPE(ctypes.c_char_p, munge_err_t)
-munge_strerror = _prototype(("munge_strerror", libmunge),
+munge_strerror = load_function("munge_strerror",
+        ctypes.c_char_p, [munge_err_t],
         ((1, "e"),))
 """
-`const char * munge_strerror(munge_err_t e);`
-
->>> message = munge_strerror(e)
+C prototype: `const char * munge_strerror(munge_err_t e);`
 
 Returns a descriptive string describing the munge errno `e`.
 """
 
-### munge_ctx_create ###
-
-_prototype = ctypes.CFUNCTYPE(munge_ctx_t)
-munge_ctx_create = _prototype(("munge_ctx_create", libmunge))
+munge_ctx_create = load_function("munge_ctx_create",
+        munge_ctx_t, [], ())
 """
-`munge_ctx_t munge_ctx_create(void);`
-
->>> ctx = munge_ctx_create()
+C prototype: `munge_ctx_t munge_ctx_create(void);`
 
 Creates and returns a new munge context or None on error.
 Abandoning a context without calling `munge_ctx_destroy()` will result
 in a memory leak.
 """
 
-### munge_ctx_copy ###
-
-_prototype = ctypes.CFUNCTYPE(munge_ctx_t, munge_ctx_t)
-munge_ctx_copy = _prototype(("munge_ctx_copy", libmunge),
+munge_ctx_copy = load_function("munge_ctx_copy",
+        munge_ctx_t, [munge_ctx_t],
         ((1, "ctx"),))
 """
-`munge_ctx_t munge_ctx_copy(munge_ctx_t ctx);`
-
->>> ctx = munge_ctx_copy(ctx)
+C prototype: `munge_ctx_t munge_ctx_copy(munge_ctx_t ctx);`
 
 Copies the context `ctx`, returning a new munge context or None on error.
 Abandoning a context without calling `munge_ctx_destroy()` will result
 in a memory leak.
 """
 
-### munge_ctx_destroy ###
-
-_prototype = ctypes.CFUNCTYPE(None, munge_ctx_t)
-munge_ctx_destroy = _prototype(("munge_ctx_destroy", libmunge),
+munge_ctx_destroy = load_function("munge_ctx_destroy",
+        None, [munge_ctx_t],
         ((1, "ctx"),))
 """
-`void munge_ctx_destroy(munge_ctx_t ctx);`
-
->>> munge_ctx_destroy(ctx)
+C prototype: `void munge_ctx_destroy(munge_ctx_t ctx);`
 
 Destroys the context `ctx`.
 """
 
-### munge_ctx_strerror ###
-
-_prototype = ctypes.CFUNCTYPE(ctypes.c_char_p, munge_ctx_t)
-munge_ctx_strerror = _prototype(("munge_ctx_strerror", libmunge),
+munge_ctx_strerror = load_function("munge_ctx_strerror",
+        ctypes.c_char_p, [munge_ctx_t],
         ((1, "ctx"),))
 """
-`const char * munge_ctx_strerror(munge_ctx_t ctx);`
-
->>> message = munge_ctx_strerror(ctx)
+C prototype: `const char * munge_ctx_strerror(munge_ctx_t ctx);`
 
 Returns a descriptive text string describing the munge error number
 according to the context `ctx`, or None if no error condition exists.
 This message may be more detailed than that returned by `munge_strerror()`.
-"""
-
-### munge_ctx_get ###
-
-munge_ctx_get = libmunge.munge_ctx_get
-"""
-`void munge_ctx_get(munge_ctx_t ctx, munge_opt_t opt, ...);`
-
->>> munge_ctx_get(ctx, opt, ptr)
-
-Gets the value for the option `opt` (of `munge_opt_t`, i.e. `MUNGE_OPT_*`)
-associated with the munge context `ctx`, storing the result in the subsequent
-pointer argument.  Refer to the `munge_opt_t` enum comments for argument types.
-If the result is a string, that string should not be freed or modified by
-the caller. Raises a `MungeError` upon failure.
 """
 
 def errcheck_munge_ctx_getset(error_code, func, arguments):
@@ -247,72 +243,69 @@ def errcheck_munge_ctx_getset(error_code, func, arguments):
     check_and_raise(error_code, ctx, None)
     return arguments
 
-munge_ctx_get.restype = munge_err_t
-munge_ctx_get.errcheck = errcheck_munge_ctx_getset
-
-### munge_ctx_set ###
-
-munge_ctx_set = libmunge.munge_ctx_set
+munge_ctx_get = load_function("munge_ctx_get",
+        munge_err_t, "*",
+        (),
+        errcheck_munge_ctx_getset)
 """
-`void munge_ctx_set(munge_ctx_t ctx, munge_opt_t opt, ...);`
+C prototype: `munge_err_t munge_ctx_get(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
->>> munge_ctx_set(ctx, opt, value)
+Note: when called from Python, returns nothing.
 
-Sets the value for the option `opt` (of `munge_opt_t`, i.e. `MUNGE_OPT_*`)
-associated with the munge context `ctx`, using the value of the subsequent
-argument. Refer to the `munge_opt_t` enum comments for argument types.
+Gets the value for the option `opt` associated with the munge context `ctx`,
+storing the result in the subsequent pointer argument. Refer to the
+`munge_opt_t` enum comments for argument types. If the result is a string,
+that string should not be freed or modified by the caller.
 Raises a `MungeError` upon failure.
 """
 
-munge_ctx_set.restype = munge_err_t
-munge_ctx_set.errcheck = errcheck_munge_ctx_getset
+munge_ctx_set = load_function("munge_ctx_set",
+        munge_err_t, "*",
+        (),
+        errcheck_munge_ctx_getset)
+"""
+C prototype: `munge_err_t munge_ctx_set(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
-### munge_enum_is_valid ###
+Note: when called from Python, returns nothing.
 
-_prototype = ctypes.CFUNCTYPE(ctypes.c_bool, munge_enum_t, ctypes.c_int)
-munge_enum_is_valid = _prototype(("munge_enum_is_valid", libmunge),
+Sets the value for the option `opt` associated with the munge context `ctx`,
+using the value of the subsequent argument. Refer to the `munge_opt_t`
+enum comments for argument types. Raises a `MungeError` upon failure.
+"""
+
+munge_enum_is_valid = load_function("munge_enum_is_valid",
+        ctypes.c_bool, [munge_enum_t, ctypes.c_int],
         ((1, "type"), (1, "val")))
 """
-`bool munge_enum_is_valid(munge_enum_t type, int val);`
+C prototype: `int munge_enum_is_valid(munge_enum_t type, int val);`
 
->>> is_valid = munge_enum_is_valid(type, val)
+Note: when called from Python, the returned int is converted to a boolean.
 
-Returns True if the given value `val` is a valid enumeration of
-the specified type `type` (of `munge_enum_t`, i.e. `MUNGE_ENUM_*`) in the
-software configuration as currently compiled; otherwise returns False.
-Some enumerations correspond to options that can only be enabled at
-compile-time.
+Returns True if the given value `val` is a valid enumeration of the
+specified type `type` in the software configuration as currently compiled;
+otherwise returns False. Some enumerations correspond to options that can
+only be enabled at compile-time.
 """
 
-### munge_enum_int_to_str ###
-
-_prototype = ctypes.CFUNCTYPE(ctypes.c_char_p, munge_enum_t, ctypes.c_int)
-munge_enum_int_to_str = _prototype(("munge_enum_int_to_str", libmunge),
+munge_enum_int_to_str = load_function("munge_enum_int_to_str",
+        ctypes.c_char_p, [munge_enum_t, ctypes.c_int],
         ((1, "type"), (1, "val")))
 """
-`const char * munge_enum_int_to_str(munge_enum_t type, int val);`
-
->>> s = munge_enum_int_to_str(type, val)
+C prototype: `const char * munge_enum_int_to_str(munge_enum_t type, int val);`
 
 Converts the munge enumeration `val` of the specified type `type`
-(of `munge_enum_t`, i.e. `MUNGE_ENUM_*`) into a text string.
-Returns the text string, or None on error.
+into a text string. Returns the text string, or None on error.
 """
 
-### munge_enum_str_to_int ###
-
-_prototype = ctypes.CFUNCTYPE(ctypes.c_int, munge_enum_t, ctypes.c_char_p)
-munge_enum_str_to_int = _prototype(("munge_enum_str_to_int", libmunge),
+munge_enum_str_to_int = load_function("munge_enum_str_to_int",
+        ctypes.c_int, [munge_enum_t, ctypes.c_char_p],
         ((1, "type"), (1, "str")))
 """
-`int munge_enum_str_to_int(munge_enum_t type, const char *str);`
-
->>> num = munge_enum_str_to_int(type, str)
+C prototype: `int munge_enum_str_to_int(munge_enum_t type, const char *str);`
 
 Converts the case-insensitive byte string `str` into the corresponding
-munge enumeration of the specified type `type` (of `munge_enum_t`,
-i.e. `MUNGE_ENUM_*`). Returns a munge enumeration on success (>= 0),
-or -1 on error.
+munge enumeration of the specified type `type`. Returns a munge
+enumeration on success (>= 0), or -1 on error.
 """
 
 
@@ -338,8 +331,6 @@ MUNGE_ENUM_CIPHER           =  0    #: cipher enum type
 MUNGE_ENUM_MAC              =  1    #: mac enum type
 MUNGE_ENUM_ZIP              =  2    #: zip enum type
 
-
-del _prototype
 
 __all__ = [
         "munge_encode", "munge_decode", "munge_strerror",

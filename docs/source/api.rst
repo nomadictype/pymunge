@@ -57,6 +57,6 @@ Low-level API
 
      api-lowlevel
 
-The `pymunge.native` module provides access to the low-level C API of libmunge.
+The `pymunge.raw` module provides access to the low-level C API of libmunge.
 See the :doc:`module documentation <api-lowlevel>`.
 
