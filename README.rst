@@ -17,6 +17,8 @@ Official pymunge repository: https://github.com/nomadictype/pymunge
 
 PyPI project page: https://pypi.python.org/pypi/pymunge
 
+API reference: https://pymunge.readthedocs.io/en/latest/
+
 
 Install instructions
 ====================
