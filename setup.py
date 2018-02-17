@@ -13,6 +13,7 @@ from distutils.command.clean import clean
 from codecs import open
 import os
 from os import path
+import re
 import subprocess
 import sys
 
@@ -23,9 +24,14 @@ about = {}
 with open(path.join(here, 'pymunge', '_version.py')) as f:
     exec(f.read(), about)
 
-# Read long description from readme
+# Read description from readme
 with open(path.join(here, 'README.rst'), encoding='utf-8') as f:
-    long_description = f.read()
+    readme = f.read()
+    match = re.match(r'^(?:=+\n)?[^\n]+\n=+\n\s*(.*?)\.?\n{2,}(.*)', readme, re.DOTALL)
+    if not match:
+        raise AssertionError('Failed to parse description from README.rst')
+    description = match.group(1).strip()
+    long_description = match.group(2).strip()
 
 class CleanCommand(clean):
     """Custom clean command to tidy up the project root."""
@@ -50,7 +56,7 @@ else:
 setup(
     name='pymunge',
     version=about['__version__'],
-    description='A Python interface to MUNGE',
+    description=description,
     long_description=long_description,
     url='https://github.com/nomadictype/pymunge',
     author='nomadictype',
