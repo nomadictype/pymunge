@@ -44,7 +44,7 @@ import ctypes.util
 import pymunge.error
 
 #: Name of the libmunge shared object.
-libmunge_filename = ctypes.util.find_library('mungey')
+libmunge_filename = ctypes.util.find_library('munge')
 
 #: Handle to the loaded libmunge shared object (a `ctypes.CDLL` object).
 libmunge = None
@@ -69,10 +69,11 @@ def load_function(name, restype, argtypes, paramflags, errcheck=None):
         else:
             argnames = [flag[1] for flag in paramflags if flag[0] & 2 == 0]
             args = ", ".join(argnames)
-        def _raise(e):
-            raise e
-        return eval("lambda " + args + ": "
-                "_raise(ImportError('libmunge not found'))")
+        l = {}
+        exec("def function(" + args + "):\n" +
+                "\traise ImportError('Failed to call C function " + name +
+                ": libmunge C library not found')", {}, l)
+        return l['function']
     else:
         if argtypes == "*":
             function = getattr(libmunge, name)
