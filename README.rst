@@ -115,7 +115,7 @@ pymunge was written by nomadictype (https://github.com/nomadictype/).
 License
 -------
 
-Copyright (C) 2017 nomadictype <nomadictype AT tutanota.com>
+Copyright (C) 2017-2018 nomadictype <nomadictype AT tutanota.com>
 
 Like libmunge, pymunge is dual-licensed under GPL-3 and LGPL-3.
 See LICENSE.txt for details.

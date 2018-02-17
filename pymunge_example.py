@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 #########################################################################
 # pymunge_example.py - a set of simple usage examples for pymunge
-# Copyright (C) 2017 nomadictype <nomadictype AT tutanota.com>
+# Copyright (C) 2017-2018 nomadictype <nomadictype AT tutanota.com>
 #
 # pymunge is free software: you can redistribute it and/or modify it
 # under the terms of the GNU General Public License as published by the
