@@ -1,6 +1,8 @@
-include README.rst
-include LICENSE.txt docs/licenses/GPL-3 docs/licenses/LGPL-3
-recursive-include docs *.txt
-include changelog.txt
+include README.rst changelog.txt LICENSE.txt
 include pymunge_example.py
+recursive-include docs *
+recursive-exclude docs/build *
+include docs/build/conf.py docs/build/Makefile docs/build/make.bat
+recursive-include docs/build/static *
+recursive-include docs/build/templates *
 recursive-include util *
