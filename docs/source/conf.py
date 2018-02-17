@@ -158,7 +158,7 @@ man_pages = [
 #  dir menu entry, description, category)
 texinfo_documents = [
     (master_doc, 'pymunge', 'pymunge Documentation',
-     author, 'pymunge', 'One line description of project.',
+     author, 'pymunge', 'A Python interface to MUNGE.',
      'Miscellaneous'),
 ]
 

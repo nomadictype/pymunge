@@ -7,13 +7,11 @@ REM Command file for Sphinx documentation
 if "%SPHINXBUILD%" == "" (
 	set SPHINXBUILD=sphinx-build
 )
-set SPHINXOPTS=-c .
-set SOURCEDIR=..
-set BUILDDIR=.
+set SOURCEDIR=.
+set BUILDDIR=..\build
 set SPHINXPROJ=pymunge
 
 if "%1" == "" goto help
-if "%1" == "clean" goto clean
 
 %SPHINXBUILD% >NUL 2>NUL
 if errorlevel 9009 (
@@ -33,10 +31,6 @@ goto end
 
 :help
 %SPHINXBUILD% -M help %SOURCEDIR% %BUILDDIR% %SPHINXOPTS%
-goto end
-
-:clean
-del /S %BUILDDIR%\html %BUILDDIR%\doctrees
 
 :end
 popd
