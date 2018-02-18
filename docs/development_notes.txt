@@ -48,7 +48,10 @@ Release checklist
 - Check if any other release files (e.g. setup.py, README) need updates.
   In particular check if any requirements/depends need to be updated.
 - Make a commit for the above changes (if any)
-- Update version number in pymunge/_version.py and README.rst
+- Update version number in:
+  * pymunge/_version.py
+  * README.rst
+  * docs/source/conf.py
 - Update changelog.txt
 - Make a version bump commit. (Do not push this commit yet.)
 - Tag this commit with the version number. (Do not push this tag either.)
