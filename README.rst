@@ -71,7 +71,7 @@ The credential `cred` can now be sent to some other process to decode it
 of the program which uses pymunge, pymunge does not provide any functions
 to do this! For testing purposes, you can also pipe the credential into
 the `unmunge` program by hand. To keep this tutorial simple, let us
-decode the credential directly in the same process::
+decode the credential directly in the same process:
 
 >>> payload, uid, gid, ctx = pymunge.decode(cred)
 >>> payload
