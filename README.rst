@@ -1,5 +1,5 @@
 =============
-pymunge 0.1.2
+pymunge 0.1.3
 =============
 
 A Python interface to MUNGE.
