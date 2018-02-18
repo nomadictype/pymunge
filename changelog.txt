@@ -1,3 +1,37 @@
+Version 0.1.2 (????-??-??)
+--------------------------
+
+Major new features:
+
+* Added Python 2 support. (Python 3.4+ is still the main target.)
+* Added API documentation at https://pymunge.readthedocs.io/
+  (also buildable locally with Sphinx).
+
+Incompatible changes:
+
+* Module pymunge.native has been renamed to pymunge.raw.
+* pymunge.raw can now be imported even if libmunge cannot be found;
+  in the latter case calling any libmunge function causes an
+  ImportError. To check if the library was found, import pymunge.raw
+  and check whether pymunge.raw.libmunge is None.
+* The raw functions munge_ctx_get and munge_ctx_set now automatically
+  wrap their first two arguments with the correct C types (i.e.
+  munge_ctx_t, munge_opt_t). The caller must not wrap them that way
+  anymore (and instead should just pass integers), otherwise the call
+  will fail with a type error due to repeated wrapping with C types.
+
+Bug fixes:
+
+* Fixed a segfault on certain platforms when getting or setting
+  context options.
+* The "setup.py clean" command now accepts standard arguments. This
+  fixes incompatibilities with certain packaging tools (e.g. stdeb).
+
+Other changes:
+
+* Added enum34 as install requirement on Python versions before 3.4.
+* Improved many docstrings and some parts of the readme
+
 Version 0.1.1 (2017-12-28)
 --------------------------
 
