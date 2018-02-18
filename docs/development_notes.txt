@@ -47,6 +47,7 @@ Release checklist
   (check-manifest may be useful here)
 - Check if any other release files (e.g. setup.py, README) need updates.
   In particular check if any requirements/depends need to be updated.
+- Check package metadata: python setup.py check -mrs
 - Make a commit for the above changes (if any)
 - Update version number in:
   * pymunge/_version.py
