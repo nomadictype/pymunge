@@ -1,0 +1,19 @@
+language: python
+python:
+  - "2.7"
+  - "3.3"
+  - "3.4"
+  - "3.5"
+  - "3.5-dev"
+  - "3.6"
+  - "3.6-dev"
+  - "3.7-dev"
+sudo: required
+before_install:
+  - sudo apt-get -qq update
+  - sudo apt-get install -y munge
+  - sudo create-munge-key
+  - sudo service munge start
+install:
+  - pip install -r requirements.txt
+script: python -m pytest
