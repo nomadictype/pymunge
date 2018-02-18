@@ -68,3 +68,4 @@ Release checklist
 
     twine upload dist/*
 
+- Add the release on github.
