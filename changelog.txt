@@ -26,6 +26,7 @@ Bug fixes:
   context options.
 * The "setup.py clean" command now accepts standard arguments. This
   fixes incompatibilities with certain packaging tools (e.g. stdeb).
+* Fixed tests not being included in source distribution.
 
 Other changes:
 
