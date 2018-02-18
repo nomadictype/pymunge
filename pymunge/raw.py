@@ -244,35 +244,41 @@ def errcheck_munge_ctx_getset(error_code, func, arguments):
     check_and_raise(error_code, ctx, None)
     return arguments
 
-munge_ctx_get = load_function("munge_ctx_get",
+_munge_ctx_get = load_function("munge_ctx_get",
         munge_err_t, "*",
         (),
         errcheck_munge_ctx_getset)
-"""
-C prototype: `munge_err_t munge_ctx_get(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
-Note: when called from Python, returns nothing.
+def munge_ctx_get(ctx, opt, ptr):
+    """
+    C prototype: `munge_err_t munge_ctx_get(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
-Gets the value for the option `opt` associated with the munge context `ctx`,
-storing the result in the subsequent pointer argument. Refer to the
-`munge_opt_t` enum comments for argument types. If the result is a string,
-that string should not be freed or modified by the caller.
-Raises a `MungeError` upon failure.
-"""
+    Note: when called from Python, returns nothing.
 
-munge_ctx_set = load_function("munge_ctx_set",
+    Gets the value for the option `opt` associated with the munge context `ctx`,
+    storing the result in the subsequent pointer argument. Refer to the
+    `munge_opt_t` enum comments for argument types. If the result is a string,
+    that string should not be freed or modified by the caller.
+    Raises a `MungeError` upon failure.
+    """
+    return _munge_ctx_get(munge_ctx_t(ctx), munge_opt_t(opt), ptr)
+
+_munge_ctx_set = load_function("munge_ctx_set",
         munge_err_t, "*",
         (),
         errcheck_munge_ctx_getset)
-"""
-C prototype: `munge_err_t munge_ctx_set(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
-Note: when called from Python, returns nothing.
+def munge_ctx_set(ctx, opt, val):
+    """
+    C prototype: `munge_err_t munge_ctx_set(munge_ctx_t ctx, munge_opt_t opt, ...);`
 
-Sets the value for the option `opt` associated with the munge context `ctx`,
-using the value of the subsequent argument. Refer to the `munge_opt_t`
-enum comments for argument types. Raises a `MungeError` upon failure.
-"""
+    Note: when called from Python, returns nothing.
+
+    Sets the value for the option `opt` associated with the munge context `ctx`,
+    using the value of the subsequent argument. Refer to the `munge_opt_t`
+    enum comments for argument types. Raises a `MungeError` upon failure.
+    """
+    return _munge_ctx_set(munge_ctx_t(ctx), munge_opt_t(opt), val)
 
 munge_enum_is_valid = load_function("munge_enum_is_valid",
         ctypes.c_bool, [munge_enum_t, ctypes.c_int],
