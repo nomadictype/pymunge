@@ -60,6 +60,7 @@ setup(
     long_description=long_description,
     url='https://github.com/nomadictype/pymunge',
     author='nomadictype',
+    author_email='nomadictype@tutanota.com',
     # For a list of valid classifiers, see
     # https://pypi.python.org/pypi?%3Aaction=list_classifiers
     classifiers=[  # Optional
