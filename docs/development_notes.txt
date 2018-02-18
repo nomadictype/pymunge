@@ -12,6 +12,29 @@ the slow tests, use:
 
     python3 -m pytest -m "not slow"
 
+Building the API documentation
+==============================
+
+The API documentation is available online at https://pymunge.readthedocs.io/.
+However, it can also be built locally using Sphinx. To do so, first create
+a virtualenv, e.g.:
+
+    python3 -m venv venv
+    source venv/bin/activate
+
+Install Sphinx and the readthedocs theme (the latter is optional):
+
+    pip install sphinx sphinx-rtd-theme
+
+Build the docs:
+
+    cd docs/source
+    make html
+
+The created docs can then be found at:
+
+    docs/build/html/index.html
+
 Release checklist
 =================
 
@@ -19,6 +42,7 @@ Release checklist
 
 - Ensure that all tests succeed
 - Ensure that pymunge_example.py works
+- Ensure that docs can be built locally and on readthedocs
 - Check if MANIFEST.in needs to be updated; make any necessary changes.
   (check-manifest may be useful here)
 - Check if any other release files (e.g. setup.py, README) need updates.
