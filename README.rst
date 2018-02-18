@@ -122,3 +122,17 @@ Copyright (C) 2017-2018 nomadictype <nomadictype AT tutanota.com>
 Like libmunge, pymunge is dual-licensed under GPL-3 and LGPL-3.
 See LICENSE.txt for details.
 
+
+
+.. image:: https://img.shields.io/github/release/nomadictype/pymunge.svg
+  :target: https://github.com/nomadictype/pymunge/releases
+
+.. image:: https://img.shields.io/pypi/v/pymunge.svg
+  :target: https://pypi.python.org/pypi/pymunge
+
+.. image:: https://travis-ci.org/nomadictype/pymunge.svg?branch=master
+  :target: https://travis-ci.org/nomadictype/pymunge
+
+.. image:: https://readthedocs.org/projects/pymunge/badge/?version=latest
+  :target: https://pymunge.readthedocs.io/en/latest/?badge=latest
+
