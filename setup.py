@@ -7,7 +7,7 @@ Based on:
   https://github.com/kennethreitz/setup.py
 """
 
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages, Command, Extension
 from setuptools.command.sdist import sdist
 from distutils.command.clean import clean
 from codecs import open
@@ -53,6 +53,10 @@ if sys.version_info >= (3,4):
 else:
     install_requires = ['enum34']
 
+pymunge_swig_module = Extension('_pymunge_swig',
+        sources=['pymunge/pymunge_swig_wrap.c'],
+        libraries=['munge'])
+
 setup(
     name='pymunge',
     version=about['__version__'],
@@ -78,6 +82,7 @@ setup(
     ],
     keywords='munge libmunge hpc cluster authentication credentials',
     packages=['pymunge'],
+    ext_modules=[pymunge_swig_module],
     install_requires=install_requires,
     cmdclass={
         'clean': CleanCommand,
