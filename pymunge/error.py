@@ -26,8 +26,8 @@ import enum
 
 class MungeErrorCode(enum.Enum):
     """MUNGE error codes."""
-    EMUNGE_SUCCESS              =  0  #: Whoohoo!
-    EMUNGE_SNAFU                =  1  #: Doh!
+    EMUNGE_SUCCESS              =  0  #: Success
+    EMUNGE_SNAFU                =  1  #: Internal error
     EMUNGE_BAD_ARG              =  2  #: Invalid argument
     EMUNGE_BAD_LENGTH           =  3  #: Exceeded maximum message length
     EMUNGE_OVERFLOW             =  4  #: Buffer overflow
