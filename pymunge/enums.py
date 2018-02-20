@@ -50,6 +50,26 @@ class ZipType(enum.Enum):
     bzlib      =  2    #: bzip2 by Julian Seward
     zlib       =  3    #: zlib "deflate" by Gailly & Adler
 
+class Option(enum.Enum):
+    """MUNGE context options"""
+    CipherType       =  0    #: symmetric cipher type (int)
+    MACType          =  1    #: message auth code type (int)
+    ZipType          =  2    #: compression type (int)
+    Realm            =  3    #: security realm (str)
+    TTL              =  4    #: time-to-live (int)
+    Addr4            =  5    #: src IPv4 addr (struct in_addr)
+    EncodeTime       =  6    #: time when cred encoded (time_t)
+    DecodeTime       =  7    #: time when cred decoded (time_t)
+    Socket           =  8    #: socket for comm w/ daemon (str)
+    UidRestriction   =  9    #: UID able to decode cred (uid_t)
+    GidRestriction   = 10    #: GID able to decode cred (gid_t)
+
+class EnumType(enum.Enum):
+    """MUNGE enum types for str/int conversions"""
+    Cipher     =  0    #: cipher enum type
+    MAC        =  1    #: mac enum type
+    Zip        =  2    #: zip enum type
+
 TTL_MAXIMUM    = -1    #: Use the maximum TTL allowed by the daemon.
 TTL_DEFAULT    =  0    #: Use the default TTL specified by the daemon.
 UID_ANY        = -1    #: Do not restrict decode to a specific UID.

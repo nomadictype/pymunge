@@ -7,9 +7,10 @@ Based on:
   https://github.com/kennethreitz/setup.py
 """
 
-from setuptools import setup, find_packages, Command
+from setuptools import setup, find_packages, Command, Extension
 from setuptools.command.sdist import sdist
 from distutils.command.clean import clean
+from Cython.Build import cythonize
 from codecs import open
 import os
 from os import path
@@ -53,6 +54,16 @@ if sys.version_info >= (3,4):
 else:
     install_requires = ['enum34']
 
+extensions = [
+        Extension(
+            name='_pymunge',
+            sources=['pymunge/_pymunge.pyx'],
+            libraries=['munge']),
+        Extension(
+            name='_pymunge_enums',
+            sources=['pymunge/enums.py']),
+]
+
 setup(
     name='pymunge',
     version=about['__version__'],
@@ -78,6 +89,7 @@ setup(
     ],
     keywords='munge libmunge hpc cluster authentication credentials',
     packages=['pymunge'],
+    ext_modules = cythonize(extensions),
     install_requires=install_requires,
     cmdclass={
         'clean': CleanCommand,
