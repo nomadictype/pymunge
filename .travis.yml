@@ -16,6 +16,7 @@ before_install:
   - sudo service munge start
 install:
   - pip install -r requirements_test.txt
-script: coverage run --source pymunge -m pytest --pep8
+script:
+  - util/travis_run_tests.sh
 after_success:
   - coveralls
