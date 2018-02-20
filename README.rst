@@ -133,6 +133,9 @@ See LICENSE.txt for details.
 .. image:: https://travis-ci.org/nomadictype/pymunge.svg?branch=master
   :target: https://travis-ci.org/nomadictype/pymunge
 
+.. image:: https://img.shields.io/coveralls/github/nomadictype/pymunge.svg
+  :target: https://coveralls.io/github/nomadictype/pymunge
+
 .. image:: https://readthedocs.org/projects/pymunge/badge/?version=latest
   :target: https://pymunge.readthedocs.io/en/latest/?badge=latest
 
