@@ -24,7 +24,7 @@ from pymunge.error import MungeErrorCode, MungeError
 
 def test_construct_munge_error():
     e = MungeError(MungeErrorCode.EMUNGE_SNAFU.value,
-            'Something bad happened', 42)
+                   'Something bad happened', 42)
     assert e.code == MungeErrorCode.EMUNGE_SNAFU
     assert e.message == 'Something bad happened'
     assert e.result == 42

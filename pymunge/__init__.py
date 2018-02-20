@@ -59,12 +59,11 @@ from pymunge.error import MungeError, MungeErrorCode
 
 import pymunge.enums
 from pymunge.enums import CipherType, MACType, ZipType, \
-        TTL_MAXIMUM, TTL_DEFAULT, UID_ANY, GID_ANY
+    TTL_MAXIMUM, TTL_DEFAULT, UID_ANY, GID_ANY
 
 import pymunge.raw
 
 __all__ = ['MungeContext', 'encode', 'decode',
-        'MungeError', 'MungeErrorCode',
-        'CipherType', 'MACType', 'ZipType',
-        'TTL_MAXIMUM', 'TTL_DEFAULT', 'UID_ANY', 'GID_ANY']
-
+           'MungeError', 'MungeErrorCode',
+           'CipherType', 'MACType', 'ZipType',
+           'TTL_MAXIMUM', 'TTL_DEFAULT', 'UID_ANY', 'GID_ANY']

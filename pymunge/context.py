@@ -119,7 +119,7 @@ class MungeContext(object):
             return pymunge.raw.munge_encode(self.ctx, None, 0)
         else:
             raise TypeError('Payload must be bytes or None, got %s' %
-                    type(payload).__name__)
+                            type(payload).__name__)
 
     def decode(self, cred):
         """Validate a MUNGE credential. The attributes of this context will be
@@ -137,59 +137,63 @@ class MungeContext(object):
             return pymunge.raw.munge_decode(cred, self.ctx)
         else:
             raise TypeError('Credential must be bytes, got %s' %
-                    type(cred).__name__)
+                            type(cred).__name__)
 
     @property
     def cipher_type(self):
         """Symmetric cipher type (a `CipherType`)."""
         return CipherType(self._get_option(pymunge.raw.MUNGE_OPT_CIPHER_TYPE,
-                ctypes.c_int))
+                                           ctypes.c_int))
+
     @cipher_type.setter
     def cipher_type(self, cipher_type):
         self._check_arg_type(cipher_type, "cipher_type", CipherType)
         self._set_option(pymunge.raw.MUNGE_OPT_CIPHER_TYPE,
-                ctypes.c_int, cipher_type.value)
+                         ctypes.c_int, cipher_type.value)
 
     @property
     def mac_type(self):
         """Message authentication code type (a `MACType`)."""
         return MACType(self._get_option(pymunge.raw.MUNGE_OPT_MAC_TYPE,
-                ctypes.c_int))
+                                        ctypes.c_int))
+
     @mac_type.setter
     def mac_type(self, mac_type):
         self._check_arg_type(mac_type, "mac_type", MACType)
         self._set_option(pymunge.raw.MUNGE_OPT_MAC_TYPE,
-                ctypes.c_int, mac_type.value)
+                         ctypes.c_int, mac_type.value)
 
     @property
     def zip_type(self):
         """Compression type (a `ZipType`)."""
         return ZipType(self._get_option(pymunge.raw.MUNGE_OPT_ZIP_TYPE,
-                ctypes.c_int))
+                                        ctypes.c_int))
+
     @zip_type.setter
     def zip_type(self, zip_type):
         self._check_arg_type(zip_type, "zip_type", ZipType)
         self._set_option(pymunge.raw.MUNGE_OPT_ZIP_TYPE,
-                ctypes.c_int, zip_type.value)
+                         ctypes.c_int, zip_type.value)
 
     @property
     def realm(self):
         """Security realm (a str). Not currently supported."""
         r = self._get_option(pymunge.raw.MUNGE_OPT_REALM,
-                ctypes.c_char_p)
+                             ctypes.c_char_p)
         if r is not None:
             return r.decode('utf-8')
         else:
             return None
+
     @realm.setter
     def realm(self, realm):
         if realm is not None:
             self._check_arg_type(realm, "realm", str)
             self._set_option(pymunge.raw.MUNGE_OPT_REALM,
-                    ctypes.c_char_p, realm.encode('utf-8'))
+                             ctypes.c_char_p, realm.encode('utf-8'))
         else:
             self._set_option(pymunge.raw.MUNGE_OPT_REALM,
-                    ctypes.c_char_p, None)
+                             ctypes.c_char_p, None)
 
     @property
     def ttl(self):
@@ -203,11 +207,12 @@ class MungeContext(object):
         * `TTL_MAXIMUM`, which specifies the maximum allowed by the
           munged configuration."""
         return self._get_option(pymunge.raw.MUNGE_OPT_TTL, ctypes.c_int)
+
     @ttl.setter
     def ttl(self, ttl):
         self._check_arg_type(ttl, "ttl", int)
         self._set_option(pymunge.raw.MUNGE_OPT_TTL,
-                ctypes.c_int, ttl)
+                         ctypes.c_int, ttl)
 
     @property
     def addr4(self):
@@ -222,26 +227,27 @@ class MungeContext(object):
         """The time (in seconds since the epoch) at which the credential
         was encoded. This property cannot be explicitly set."""
         return self._get_option(pymunge.raw.MUNGE_OPT_ENCODE_TIME,
-                pymunge.raw.time_t)
+                                pymunge.raw.time_t)
 
     @property
     def decode_time(self):
         """The time (in seconds since the epoch) at which the credential
         was decoded. This property cannot be explicitly set."""
         return self._get_option(pymunge.raw.MUNGE_OPT_DECODE_TIME,
-                pymunge.raw.time_t)
+                                pymunge.raw.time_t)
 
     @property
     def socket(self):
         """Path of the local domain socket for connecting with munged,
         a str."""
         return self._get_option(pymunge.raw.MUNGE_OPT_SOCKET,
-                ctypes.c_char_p).decode('utf-8')
+                                ctypes.c_char_p).decode('utf-8')
+
     @socket.setter
     def socket(self, sock):
         self._check_arg_type(sock, "socket", str)
         self._set_option(pymunge.raw.MUNGE_OPT_SOCKET,
-                ctypes.c_char_p, sock.encode('utf-8'))
+                         ctypes.c_char_p, sock.encode('utf-8'))
 
     @property
     def uid_restriction(self):
@@ -250,16 +256,17 @@ class MungeContext(object):
         credential decode. Default is the special value `UID_ANY`, which
         means no UID restriction is set."""
         uid = self._get_option(pymunge.raw.MUNGE_OPT_UID_RESTRICTION,
-                pymunge.raw.uid_t)
+                               pymunge.raw.uid_t)
         if uid == pymunge.raw.uid_t(pymunge.enums.UID_ANY).value:
             return pymunge.enums.UID_ANY
         else:
             return uid
+
     @uid_restriction.setter
     def uid_restriction(self, uid_restriction):
         self._check_arg_type(uid_restriction, "uid_restriction", int)
         self._set_option(pymunge.raw.MUNGE_OPT_UID_RESTRICTION,
-                pymunge.raw.uid_t, uid_restriction)
+                         pymunge.raw.uid_t, uid_restriction)
 
     @property
     def gid_restriction(self):
@@ -268,30 +275,33 @@ class MungeContext(object):
         credential decode. Default is the special value `GID_ANY`, which
         means no GID restriction is set."""
         gid = self._get_option(pymunge.raw.MUNGE_OPT_GID_RESTRICTION,
-                pymunge.raw.gid_t)
+                               pymunge.raw.gid_t)
         if gid == pymunge.raw.gid_t(pymunge.enums.GID_ANY).value:
             return pymunge.enums.GID_ANY
         else:
             return gid
+
     @gid_restriction.setter
     def gid_restriction(self, gid_restriction):
         self._check_arg_type(gid_restriction, "gid_restriction", int)
         self._set_option(pymunge.raw.MUNGE_OPT_GID_RESTRICTION,
-                pymunge.raw.gid_t, gid_restriction)
+                         pymunge.raw.gid_t, gid_restriction)
 
     def _ensure_is_open(self):
         if self.closed:
-            raise MungeError(MungeErrorCode.EMUNGE_BAD_ARG, "Context is closed")
+            raise MungeError(MungeErrorCode.EMUNGE_BAD_ARG,
+                             "Context is closed")
 
     def _check_arg_type(self, arg, argname, argtype):
         if not isinstance(arg, argtype):
-            raise TypeError("%s must be of type %s" % (argname, argtype.__name__))
+            raise TypeError("%s must be of type %s" %
+                            (argname, argtype.__name__))
 
     def _get_option(self, option, option_type):
         self._ensure_is_open()
         val = option_type()
         result = pymunge.raw.munge_ctx_get(self.ctx, option,
-                        ctypes.byref(val))
+                                           ctypes.byref(val))
         return val.value
 
     def _set_option(self, option, option_type, value):
@@ -316,8 +326,8 @@ def decode(cred):
     UID/GID of the process that created the credential, and `ctx` is a
     `MungeContext` set to the one used to create the credential.
 
-    If unsuccessful, a `MungeError` is raised. For certain errors
-    (i.e. `EMUNGE_CRED_EXPIRED`, `EMUNGE_CRED_REWOUND`, `EMUNGE_CRED_REPLAYED`),
+    If unsuccessful, a `MungeError` is raised. For certain errors (i.e.
+    `EMUNGE_CRED_EXPIRED`, `EMUNGE_CRED_REWOUND`, `EMUNGE_CRED_REPLAYED`),
     the `payload`, `uid` and `gid` can still be obtained via the `result`
     property of the raised `MungeError`. Note that the context cannot
     be obtained from the `MungeError`; if you need it, manually create
@@ -325,4 +335,3 @@ def decode(cred):
     ctx = MungeContext()
     payload, uid, gid = ctx.decode(cred)
     return payload, uid, gid, ctx
-

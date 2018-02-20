@@ -37,7 +37,7 @@ class MungeErrorCode(enum.Enum):
     EMUNGE_BAD_CRED             =  8  #: Bad credential format
     EMUNGE_BAD_VERSION          =  9  #: Bad credential version
     EMUNGE_BAD_CIPHER           = 10  #: Bad credential cipher type
-    EMUNGE_BAD_MAC              = 11  #: Bad credential message authentication code type
+    EMUNGE_BAD_MAC              = 11  #: Bad credential MAC type
     EMUNGE_BAD_ZIP              = 12  #: Bad credential compression type
     EMUNGE_BAD_REALM            = 13  #: Bad credential security realm
     EMUNGE_CRED_INVALID         = 14  #: Credential invalid
@@ -64,11 +64,11 @@ class MungeError(Exception):
       that would have been returned by the decode function or method.
     """
 
-    def __init__(self, code, message, result = None):
+    def __init__(self, code, message, result=None):
         if not isinstance(code, MungeErrorCode):
             code = MungeErrorCode(code)
-        super(MungeError, self).__init__("%s (error code %d: %s)" %
-                (message, code.value, code.name))
+        super(MungeError, self).__init__(
+            "%s (error code %d: %s)" % (message, code.value, code.name))
         self.code = code
         self.message = message
         self.result = result

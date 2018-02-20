@@ -75,7 +75,8 @@ print("")
 ######
 
 print(">>> Exception handling example")
-print("Re-decoding a credential should result in a 'replayed credential' error")
+print("Re-decoding a credential should result in a "
+      "'replayed credential' error")
 
 with pymunge.MungeContext() as ctx:
     try:
@@ -84,11 +85,10 @@ with pymunge.MungeContext() as ctx:
         print("Caught MungeError: " + str(err))
         if err.code == pymunge.MungeErrorCode.EMUNGE_CRED_REPLAYED:
             print("It is possible to recover the decode result " +
-                    "from a replayed credential:")
+                  "from a replayed credential:")
             payload, uid, gid = err.result
             print("  Payload:      %r" % payload)
             print("  UID:          %d" % uid)
             print("  GID:          %d" % gid)
             print("  Cipher type:  %r" % ctx.cipher_type)
             print("  (etc.)")
-

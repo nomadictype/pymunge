@@ -55,8 +55,6 @@ else:
     warnings.warn("libmunge not found. All calls to pymunge.raw will fail.")
 
 
-### Helper functions ###
-
 def load_function(name, restype, argtypes, paramflags, errcheck=None):
     """pymunge internal - helper to load functions from libmunge
     raises a `MungeError` if error_code is not `EMUNGE_SUCCESS`"""
@@ -71,8 +69,8 @@ def load_function(name, restype, argtypes, paramflags, errcheck=None):
             args = ", ".join(argnames)
         l = {}
         exec("def function(" + args + "):\n" +
-                "\traise ImportError('Failed to call C function " + name +
-                ": libmunge C library not found')", {}, l)
+             "\traise ImportError('Failed to call C function " + name +
+             ": libmunge C library not found')", {}, l)
         return l['function']
     else:
         if argtypes == "*":
@@ -85,6 +83,7 @@ def load_function(name, restype, argtypes, paramflags, errcheck=None):
             function.errcheck = errcheck
         return function
 
+
 def check_and_raise(error_code, ctx, result):
     """pymunge internal - helper for error check functions;
     raises a `MungeError` if error_code is not `EMUNGE_SUCCESS`"""
@@ -95,7 +94,8 @@ def check_and_raise(error_code, ctx, result):
             message = munge_strerror(error_code).decode("utf-8")
         raise pymunge.error.MungeError(error_code, message, result)
 
-### Types ###
+
+# Type declarations
 
 #: The `munge_ctx_t` C type, an opaque handle to a MUNGE context.
 #: The low-level version of `MungeContext`.
@@ -121,7 +121,7 @@ gid_t = ctypes.c_uint
 time_t = ctypes.c_long
 
 
-### Functions ###
+# libmunge functions
 
 def errcheck_munge_encode(error_code, func, arguments):
     """pymunge internal - error check function for munge_encode"""
@@ -131,12 +131,13 @@ def errcheck_munge_encode(error_code, func, arguments):
     return result
 
 munge_encode = load_function("munge_encode",
-        munge_err_t, [ctypes.POINTER(ctypes.c_char_p),
-            munge_ctx_t, ctypes.c_void_p, ctypes.c_int],
-        ((2, "cred"), (1, "ctx", None), (1, "buf", None), (1, "len", 0)),
-        errcheck_munge_encode)
+    munge_err_t, [ctypes.POINTER(ctypes.c_char_p),
+        munge_ctx_t, ctypes.c_void_p, ctypes.c_int],
+    ((2, "cred"), (1, "ctx", None), (1, "buf", None), (1, "len", 0)),
+    errcheck_munge_encode)
 """
-C prototype: `munge_err_t munge_encode(char **cred, munge_ctx_t ctx, const void *buf, int len);`
+C prototype: `munge_err_t munge_encode(char **cred, munge_ctx_t ctx,
+const void *buf, int len);`
 
 Note: when called from Python, returns `cred` instead of the `munge_err_t`.
 
@@ -158,14 +159,15 @@ def errcheck_munge_decode(error_code, func, arguments):
     return result
 
 munge_decode = load_function("munge_decode",
-        munge_err_t, [ctypes.c_char_p, munge_ctx_t,
-            ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int),
-            ctypes.POINTER(uid_t), ctypes.POINTER(gid_t)],
-        ((1, "cred"), (1, "ctx", None), (2, "buf"), (2, "len"),
-         (2, "uid"), (2, "gid")),
-        errcheck_munge_decode)
+    munge_err_t, [ctypes.c_char_p, munge_ctx_t,
+        ctypes.POINTER(ctypes.c_void_p), ctypes.POINTER(ctypes.c_int),
+        ctypes.POINTER(uid_t), ctypes.POINTER(gid_t)],
+    ((1, "cred"), (1, "ctx", None), (2, "buf"), (2, "len"),
+     (2, "uid"), (2, "gid")),
+    errcheck_munge_decode)
 """
-C prototype: `munge_err_t munge_decode(const char *cred, munge_ctx_t ctx, void **buf, int *len, uid_t *uid, gid_t *gid);`
+C prototype: `munge_err_t munge_decode(const char *cred, munge_ctx_t ctx,
+void **buf, int *len, uid_t *uid, gid_t *gid);`
 
 Note: when called from Python, returns `(payload, uid, gid)` instead of the
 `munge_err_t`, where `payload` is the contents of `buf` of length `len`.
@@ -188,8 +190,8 @@ if the credential were still valid.
 """
 
 munge_strerror = load_function("munge_strerror",
-        ctypes.c_char_p, [munge_err_t],
-        ((1, "e"),))
+    ctypes.c_char_p, [munge_err_t],
+    ((1, "e"),))
 """
 C prototype: `const char * munge_strerror(munge_err_t e);`
 
@@ -197,7 +199,7 @@ Returns a descriptive string describing the munge errno `e`.
 """
 
 munge_ctx_create = load_function("munge_ctx_create",
-        munge_ctx_t, [], ())
+    munge_ctx_t, [], ())
 """
 C prototype: `munge_ctx_t munge_ctx_create(void);`
 
@@ -207,8 +209,8 @@ in a memory leak.
 """
 
 munge_ctx_copy = load_function("munge_ctx_copy",
-        munge_ctx_t, [munge_ctx_t],
-        ((1, "ctx"),))
+    munge_ctx_t, [munge_ctx_t],
+    ((1, "ctx"),))
 """
 C prototype: `munge_ctx_t munge_ctx_copy(munge_ctx_t ctx);`
 
@@ -218,8 +220,8 @@ in a memory leak.
 """
 
 munge_ctx_destroy = load_function("munge_ctx_destroy",
-        None, [munge_ctx_t],
-        ((1, "ctx"),))
+    None, [munge_ctx_t],
+    ((1, "ctx"),))
 """
 C prototype: `void munge_ctx_destroy(munge_ctx_t ctx);`
 
@@ -227,8 +229,8 @@ Destroys the context `ctx`.
 """
 
 munge_ctx_strerror = load_function("munge_ctx_strerror",
-        ctypes.c_char_p, [munge_ctx_t],
-        ((1, "ctx"),))
+    ctypes.c_char_p, [munge_ctx_t],
+    ((1, "ctx"),))
 """
 C prototype: `const char * munge_ctx_strerror(munge_ctx_t ctx);`
 
@@ -245,44 +247,47 @@ def errcheck_munge_ctx_getset(error_code, func, arguments):
     return arguments
 
 _munge_ctx_get = load_function("munge_ctx_get",
-        munge_err_t, "*",
-        (),
-        errcheck_munge_ctx_getset)
+    munge_err_t, "*",
+    (),
+    errcheck_munge_ctx_getset)
 
 def munge_ctx_get(ctx, opt, ptr):
     """
-    C prototype: `munge_err_t munge_ctx_get(munge_ctx_t ctx, munge_opt_t opt, ...);`
+    C prototype: `munge_err_t munge_ctx_get(munge_ctx_t ctx,
+    munge_opt_t opt, ...);`
 
     Note: when called from Python, returns nothing.
 
-    Gets the value for the option `opt` associated with the munge context `ctx`,
-    storing the result in the subsequent pointer argument. Refer to the
-    `munge_opt_t` enum comments for argument types. If the result is a string,
-    that string should not be freed or modified by the caller.
+    Gets the value for the option `opt` associated with the munge context
+    `ctx`, storing the result in the subsequent pointer argument. Refer to
+    the `munge_opt_t` enum comments for argument types. If the result is a
+    string, that string should not be freed or modified by the caller.
     Raises a `MungeError` upon failure.
     """
     return _munge_ctx_get(munge_ctx_t(ctx), munge_opt_t(opt), ptr)
 
 _munge_ctx_set = load_function("munge_ctx_set",
-        munge_err_t, "*",
-        (),
-        errcheck_munge_ctx_getset)
+    munge_err_t, "*",
+    (),
+    errcheck_munge_ctx_getset)
 
 def munge_ctx_set(ctx, opt, val):
     """
-    C prototype: `munge_err_t munge_ctx_set(munge_ctx_t ctx, munge_opt_t opt, ...);`
+    C prototype: `munge_err_t munge_ctx_set(munge_ctx_t ctx,
+    munge_opt_t opt, ...);`
 
     Note: when called from Python, returns nothing.
 
-    Sets the value for the option `opt` associated with the munge context `ctx`,
-    using the value of the subsequent argument. Refer to the `munge_opt_t`
-    enum comments for argument types. Raises a `MungeError` upon failure.
+    Sets the value for the option `opt` associated with the munge context
+    `ctx`, using the value of the subsequent argument. Refer to the
+    `munge_opt_t` enum comments for argument types. Raises a `MungeError`
+    upon failure.
     """
     return _munge_ctx_set(munge_ctx_t(ctx), munge_opt_t(opt), val)
 
 munge_enum_is_valid = load_function("munge_enum_is_valid",
-        ctypes.c_bool, [munge_enum_t, ctypes.c_int],
-        ((1, "type"), (1, "val")))
+    ctypes.c_bool, [munge_enum_t, ctypes.c_int],
+    ((1, "type"), (1, "val")))
 """
 C prototype: `int munge_enum_is_valid(munge_enum_t type, int val);`
 
@@ -295,8 +300,8 @@ only be enabled at compile-time.
 """
 
 munge_enum_int_to_str = load_function("munge_enum_int_to_str",
-        ctypes.c_char_p, [munge_enum_t, ctypes.c_int],
-        ((1, "type"), (1, "val")))
+    ctypes.c_char_p, [munge_enum_t, ctypes.c_int],
+    ((1, "type"), (1, "val")))
 """
 C prototype: `const char * munge_enum_int_to_str(munge_enum_t type, int val);`
 
@@ -305,8 +310,8 @@ into a text string. Returns the text string, or None on error.
 """
 
 munge_enum_str_to_int = load_function("munge_enum_str_to_int",
-        ctypes.c_int, [munge_enum_t, ctypes.c_char_p],
-        ((1, "type"), (1, "str")))
+    ctypes.c_int, [munge_enum_t, ctypes.c_char_p],
+    ((1, "type"), (1, "str")))
 """
 C prototype: `int munge_enum_str_to_int(munge_enum_t type, const char *str);`
 
@@ -316,10 +321,9 @@ enumeration on success (>= 0), or -1 on error.
 """
 
 
-### Enumerations (excluding those already present in pymunge.enums) ###
+# Enumerations (excluding those already present in pymunge.enums)
 
-### MUNGE context options ###
-
+# MUNGE context options
 MUNGE_OPT_CIPHER_TYPE       =  0    #: symmetric cipher type (int)
 MUNGE_OPT_MAC_TYPE          =  1    #: message auth code type (int)
 MUNGE_OPT_ZIP_TYPE          =  2    #: compression type (int)
@@ -332,29 +336,29 @@ MUNGE_OPT_SOCKET            =  8    #: socket for comm w/ daemon (str)
 MUNGE_OPT_UID_RESTRICTION   =  9    #: UID able to decode cred (uid_t)
 MUNGE_OPT_GID_RESTRICTION   = 10    #: GID able to decode cred (gid_t)
 
-### MUNGE enum types for str/int conversions ###
-
+# MUNGE enum types for str/int conversions
 MUNGE_ENUM_CIPHER           =  0    #: cipher enum type
 MUNGE_ENUM_MAC              =  1    #: mac enum type
 MUNGE_ENUM_ZIP              =  2    #: zip enum type
 
 
 __all__ = [
-        "munge_encode", "munge_decode", "munge_strerror",
-        "munge_ctx_create", "munge_ctx_copy", "munge_ctx_destroy",
-        "munge_ctx_strerror", "munge_ctx_get", "munge_ctx_set",
-        "munge_enum_is_valid", "munge_enum_int_to_str", "munge_enum_str_to_int",
+    "munge_encode", "munge_decode", "munge_strerror",
+    "munge_ctx_create", "munge_ctx_copy", "munge_ctx_destroy",
+    "munge_ctx_strerror", "munge_ctx_get", "munge_ctx_set",
+    "munge_enum_is_valid", "munge_enum_int_to_str",
+    "munge_enum_str_to_int",
 
-        "libmunge_filename", "libmunge",
+    "libmunge_filename", "libmunge",
 
-        "uid_t", "gid_t", "time_t", "munge_ctx_t", "munge_err_t",
+    "uid_t", "gid_t", "time_t", "munge_ctx_t", "munge_err_t",
 
-        "munge_opt_t",
-        "MUNGE_OPT_CIPHER_TYPE", "MUNGE_OPT_MAC_TYPE", "MUNGE_OPT_ZIP_TYPE",
-        "MUNGE_OPT_REALM", "MUNGE_OPT_TTL", "MUNGE_OPT_ADDR4",
-        "MUNGE_OPT_ENCODE_TIME", "MUNGE_OPT_DECODE_TIME", "MUNGE_OPT_SOCKET",
-        "MUNGE_OPT_UID_RESTRICTION", "MUNGE_OPT_GID_RESTRICTION",
+    "munge_opt_t",
+    "MUNGE_OPT_CIPHER_TYPE", "MUNGE_OPT_MAC_TYPE", "MUNGE_OPT_ZIP_TYPE",
+    "MUNGE_OPT_REALM", "MUNGE_OPT_TTL", "MUNGE_OPT_ADDR4",
+    "MUNGE_OPT_ENCODE_TIME", "MUNGE_OPT_DECODE_TIME", "MUNGE_OPT_SOCKET",
+    "MUNGE_OPT_UID_RESTRICTION", "MUNGE_OPT_GID_RESTRICTION",
 
-        "munge_enum_t",
-        "MUNGE_ENUM_CIPHER", "MUNGE_ENUM_MAC", "MUNGE_ENUM_ZIP",
+    "munge_enum_t",
+    "MUNGE_ENUM_CIPHER", "MUNGE_ENUM_MAC", "MUNGE_ENUM_ZIP",
 ]
