@@ -43,6 +43,9 @@ import ctypes
 import ctypes.util
 import pymunge.error
 
+#: Name of the libc shared object.
+libc = ctypes.cdll.LoadLibrary('libc.so.6')
+
 #: Name of the libmunge shared object.
 libmunge_filename = ctypes.util.find_library('munge')
 
@@ -126,7 +129,8 @@ time_t = ctypes.c_long
 def errcheck_munge_encode(error_code, func, arguments):
     """pymunge internal - error check function for munge_encode"""
     ctx = arguments[1]
-    result = arguments[0].value
+    result = bytes(memoryview(arguments[0].value))
+    libc.free(arguments[0])
     check_and_raise(error_code, ctx, result)
     return result
 
@@ -153,7 +157,8 @@ The error message may be more detailed if a `ctx` was specified.
 def errcheck_munge_decode(error_code, func, arguments):
     """pymunge internal - error check function for munge_decode"""
     ctx = arguments[1]
-    buf = ctypes.string_at(arguments[2].value, arguments[3].value)
+    buf = ctypes.string_at(memoryview(arguments[2].value), arguments[3].value)
+    libc.free(arguments[2])
     result = (buf, arguments[4].value, arguments[5].value)
     check_and_raise(error_code, ctx, result)
     return result
